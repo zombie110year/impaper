@@ -1,7 +1,8 @@
 """计算字符宽度"""
+from functools import lru_cache
 from typing import Literal
 
-__all__ = ("char_width",)
+__all__ = ("char_width", "string_width")
 
 
 # GENERATED DATA
@@ -64,3 +65,9 @@ def char_width(c: str) -> Literal[0, 1, 2]:
         if o <= num:
             return wid
     return 1
+
+
+@lru_cache(typed=True)
+def string_width(s: str) -> int:
+    """计算字符串的宽度"""
+    return sum(char_width(c) for c in s)
