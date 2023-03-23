@@ -1,7 +1,7 @@
 import exrex
 import pytest
 
-from text2png.charwidth import char_width
+from impaper.charwidth import char_width
 
 
 @pytest.mark.parametrize("char", list(exrex.generate("[a-zA-Z]")))
