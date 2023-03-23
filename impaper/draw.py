@@ -154,7 +154,7 @@ class SimpleTextDrawer(TextDrawer):
         self.conf = Config()
         self.ts = TypeSetting()
         self.fg_color = 0xFF
-        self.bg_color = 0x00
+        self.bg_color = 0x24
 
     def draw(self, text: str) -> Image.Image:
         # 准备画布
