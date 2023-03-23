@@ -1,0 +1,25 @@
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=7.2.2",
+    "exrex>=0.11.0",
+    "black>=23.1.0",
+]
+
+[project]
+name = "text2png"
+version = "0.1.0"
+description = "通过文本生成图片，会自动计算折行，默认使用自带的等距更纱黑体（简体中文）字体"
+authors = [
+    {name = "zombie110year", email = "zombie110year@outlook.com"},
+]
+dependencies = [
+    "pillow>=9.4.0",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
