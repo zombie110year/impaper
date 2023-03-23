@@ -77,3 +77,19 @@ class Font:
         else:
             imf = ImageFont.truetype(path, size)
         return imf
+
+
+@dataclass
+class Layout:
+    """设置页面布局相关内容
+
+    + `margin`: 外边距，上下左右顺序的四元组，单位 px，默认全 6px
+    + `padding`: 内边距，上下左右顺序的四元组，单位 px，默认全 2px
+    + `spacing`: 行距，单位 px，默认 2px
+    + `bgcolor`: 背景颜色，默认黑色
+    """
+
+    margin: tuple[int, int, int, int] = (6, 6, 6, 6)
+    padding: tuple[int, int, int, int] = (2, 2, 2, 2)
+    spacing: int = 2
+    bgcolor: int = 0x00
