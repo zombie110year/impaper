@@ -1,27 +1,10 @@
 """
 Config Module, define config object of {ref}`Text2Png`.
 """
-import importlib.resources as pkg_resources
-from dataclasses import dataclass
 
+from dataclasses import dataclass, field
 
-from PIL import ImageFont
-
-
-# 手动编写 init 方法
-@dataclass(init=False)
-class Config:
-    """构造文本转图像引擎的配置对象
-
-    :param ttf_font_path: 指定字体 TTF 文件，默认读取包内的等距更纱黑体SC
-    :return: 配置对象
-    :exception OSError: 无法读取字体文件时抛出
-    """
-
-    font: "Font"
-
-    def __init__(self, ttf_font_path: str | None = None) -> None:
-        self.font = Font(path=ttf_font_path)
+__all__ = ("Font", "Layout", "Config")
 
 
 @dataclass
@@ -36,60 +19,31 @@ class Font:
     """
 
     path: str = "package:///res/sarasa-mono-sc-regular.ttf"
-    fontsize: int = 14
-    fontcolor: int = 0xFF
-
-    _font: ImageFont.ImageFont | None = None
-    _last_path: str | None = None
-    _last_fontsize: int | None = None
-
-    def __init__(
-        self,
-        path: str = "package:///res/sarasa-mono-sc-regular.ttf",
-        fontsize: int = 14,
-        fontcolor: int = 255,
-    ) -> None:
-        self.path = path
-        self.fontsize = fontsize
-        self.fontcolor = fontcolor
-
-    @property
-    def font(self) -> ImageFont.ImageFont:
-        """加载字体，如果路径为 package:/// 开头则加载包里的字体文件。
-        如果路径或字号变动了，就重新加载字体。
-        """
-        if self._font is None:
-            self._font = self._load_font(self.path, self.fontsize)
-            self._last_path = self.path
-            self._last_fontsize = self.fontsize
-        if (self._last_fontsize != self.fontsize) or (self._last_path != self.path):
-            self._font = self._load_font(self.path, self.fontsize)
-            self._last_path = self.path
-            self._last_fontsize = self.fontsize
-        return self._font
-
-    @staticmethod
-    def _load_font(path: str, size: int):
-        if path.startswith("package:///"):
-            path = path[11:]
-            with pkg_resources.files(__package__).joinpath(path).open("rb") as fc:
-                imf = ImageFont.truetype(fc, size)
-        else:
-            imf = ImageFont.truetype(path, size)
-        return imf
 
 
 @dataclass
 class Layout:
     """设置页面布局相关内容
 
-    + `margin`: 外边距，上下左右顺序的四元组，单位 px，默认全 6px
-    + `padding`: 内边距，上下左右顺序的四元组，单位 px，默认全 2px
+    + `margin`: 外边距，上右下左顺序的四元组，单位 px，默认全 6px
+    + `padding`: 内边距，上右下左顺序的四元组，单位 px，默认全 2px
     + `spacing`: 行距，单位 px，默认 2px
-    + `bgcolor`: 背景颜色，默认黑色
     """
 
     margin: tuple[int, int, int, int] = (6, 6, 6, 6)
     padding: tuple[int, int, int, int] = (2, 2, 2, 2)
     spacing: int = 2
-    bgcolor: int = 0x00
+
+
+# 手动编写 init 方法
+@dataclass()
+class Config:
+    """构造文本转图像引擎的配置对象
+
+    :param ttf_font_path: 指定字体 TTF 文件，默认读取包内的等距更纱黑体SC
+    :return: 配置对象
+    :exception OSError: 无法读取字体文件时抛出
+    """
+
+    font: Font = field(default_factory=Font)
+    layout: Layout = field(default_factory=Layout)
