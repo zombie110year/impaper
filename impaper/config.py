@@ -2,13 +2,12 @@
 Config Module, define config object of {ref}`Text2Png`.
 """
 
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Extra
 
 __all__ = ("Font", "Layout", "Config")
 
 
-@dataclass
-class Font:
+class Font(BaseModel, extra=Extra.ignore):
     """
     字体相关设置
 
@@ -21,8 +20,7 @@ class Font:
     path: str = "package:///res/sarasa-mono-sc-regular.ttf"
 
 
-@dataclass
-class Layout:
+class Layout(BaseModel, extra=Extra.ignore):
     """设置页面布局相关内容
 
     + `margin`: 外边距，上右下左顺序的四元组，单位 px，默认全 6px
@@ -35,9 +33,7 @@ class Layout:
     spacing: int = 2
 
 
-# 手动编写 init 方法
-@dataclass()
-class Config:
+class Config(BaseModel, extra=Extra.ignore):
     """构造文本转图像引擎的配置对象
 
     :param ttf_font_path: 指定字体 TTF 文件，默认读取包内的等距更纱黑体SC
@@ -45,5 +41,5 @@ class Config:
     :exception OSError: 无法读取字体文件时抛出
     """
 
-    font: Font = field(default_factory=Font)
-    layout: Layout = field(default_factory=Layout)
+    font: Font = Font()
+    layout: Layout = Layout()
