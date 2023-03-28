@@ -33,6 +33,17 @@ class Layout(BaseModel, extra=Extra.ignore):
     spacing: int = 2
 
 
+class TypeSettingConfig(BaseModel, extra=Extra.ignore):
+    """设置折行、缩进相关内容
+
+    + `line_width`: 多少字符宽度折行，一般的英文字母宽度为1，汉字为2，以此类推
+    + `indentation`: 折行后的缩进符号
+    """
+
+    line_width: int = 48
+    indentation: str = "  "
+
+
 class Config(BaseModel, extra=Extra.ignore):
     """构造文本转图像引擎的配置对象
 
@@ -43,3 +54,4 @@ class Config(BaseModel, extra=Extra.ignore):
 
     font: Font = Font()
     layout: Layout = Layout()
+    typesetting: TypeSettingConfig = TypeSettingConfig()

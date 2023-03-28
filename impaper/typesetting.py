@@ -1,6 +1,6 @@
 """简单的文字排版引擎"""
 from .charwidth import char_width, string_width
-
+from .config import TypeSettingConfig
 
 class TypeSetting:
     """简单的文本排版引擎，计算文本折行，可以修改此对象的一些属性：
@@ -10,8 +10,8 @@ class TypeSetting:
 
     ```py
     ts = TypeSetting()
-    ts.line_width = 40
-    ts.indentation = ">>>"
+    ts.conf.line_width = 40
+    ts.conf.indentation = ">>>"
     text = "1234567890" * 9
     lines = ts.wrap_text(text)
     assert lines == [
@@ -21,18 +21,15 @@ class TypeSetting:
     ]
     ```
     """
-
-    # 多少宽度折行
-    line_width: int = 48
-    # 缩进符号
-    indentation: str = "  "
+    conf: TypeSettingConfig
 
     # 缩进符号的宽度
     @property
     def indent_size(self) -> int:
-        return string_width(self.indentation)
+        return string_width(self.conf.indentation)
 
     def __init__(self) -> None:
+        self.conf = TypeSettingConfig()
         pass
 
     def wrap_text(self, txt: str) -> list[str]:
@@ -51,7 +48,7 @@ class TypeSetting:
                 width = 0
                 continue
             cw = char_width(c)
-            if width + cw > self.line_width:
+            if width + cw > self.conf.line_width:
                 signs[i] = wrapline
                 # 折行时有缩进
                 width = self.indent_size + 1
@@ -65,14 +62,14 @@ class TypeSetting:
         for seq, sign in signs.items():
             if sign == newline:
                 if need_wrap:
-                    lines.append(self.indentation + txt[cursor:seq])
+                    lines.append(self.conf.indentation + txt[cursor:seq])
                     need_wrap = False
                 else:
                     lines.append(txt[cursor:seq])
                 cursor = seq + 1  # 忽略换行符
             elif sign == wrapline:
                 if need_wrap:
-                    lines.append(self.indentation + txt[cursor:seq])
+                    lines.append(self.conf.indentation + txt[cursor:seq])
                 else:
                     lines.append(txt[cursor:seq])
                 cursor = seq
@@ -80,7 +77,7 @@ class TypeSetting:
         lastline = txt[cursor:]
         if lastline:
             if need_wrap:
-                lines.append(self.indentation + txt[cursor:])
+                lines.append(self.conf.indentation + txt[cursor:])
                 need_wrap = False
             else:
                 lines.append(txt[cursor:])

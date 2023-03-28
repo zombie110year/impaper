@@ -15,6 +15,7 @@ __all__ = ("SimpleTextDrawer",)
 
 class TextDrawer(metaclass=ABCMeta):
     conf: Config
+    # conf 的修改要动态地反馈到 ts 上
     ts: TypeSetting
     fontsize: int = 14
 
@@ -22,6 +23,12 @@ class TextDrawer(metaclass=ABCMeta):
     _font: ImageFont.ImageFont = None
     _last_fontpath: str | None = None
     _last_fontsize: int | None = None
+
+    def __init__(self) -> None:
+        self.conf = Config()
+        self.ts = TypeSetting()
+        self.ts.conf = self.conf.typesetting
+        pass
 
     @property
     def font(self) -> ImageFont.FreeTypeFont:
@@ -151,8 +158,7 @@ class SimpleTextDrawer(TextDrawer):
     """
 
     def __init__(self) -> None:
-        self.conf = Config()
-        self.ts = TypeSetting()
+        super().__init__()
         self.fg_color = 0xFF
         self.bg_color = 0x24
 
