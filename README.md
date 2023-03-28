@@ -17,7 +17,7 @@ from impaper import SimpleTextDrawer
 
 
 std = SimpleTextDrawer()
-std.ts.indentation = ">>>"
+std.conf.typesetting.indentation = ">>>"
 im = std.draw(
     "abcdefg,abcdefg,abcdefg\n"
     "你好世界，你好世界，你好世界。\n"
