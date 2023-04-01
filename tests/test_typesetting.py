@@ -3,8 +3,8 @@ from impaper.typesetting import TypeSetting
 
 def test_typesetting():
     ts = TypeSetting()
-    ts.line_width = 40
-    ts.indentation = ">>>"
+    ts.conf.line_width = 40
+    ts.conf.indentation = ">>>"
     text = "1234567890" * 9
     lines = ts.wrap_text(text)
     assert lines == [

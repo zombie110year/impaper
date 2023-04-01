@@ -26,8 +26,7 @@ class TextDrawer(metaclass=ABCMeta):
 
     def __init__(self) -> None:
         self.conf = Config()
-        self.ts = TypeSetting()
-        self.ts.conf = self.conf.typesetting
+        self.ts = TypeSetting(self)
         pass
 
     @property

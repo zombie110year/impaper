@@ -1,6 +1,11 @@
 """简单的文字排版引擎"""
+from typing import TYPE_CHECKING, Union
 from .charwidth import char_width, string_width
 from .config import TypeSettingConfig
+
+if TYPE_CHECKING:
+    from .draw import TextDrawer
+
 
 class TypeSetting:
     """简单的文本排版引擎，计算文本折行，可以修改此对象的一些属性：
@@ -21,15 +26,32 @@ class TypeSetting:
     ]
     ```
     """
-    conf: TypeSettingConfig
+
+    __conf: TypeSettingConfig
+    __caller: "TextDrawer"
+
+    @property
+    def conf(self) -> TypeSettingConfig:
+        if self.__caller:
+            return self.__caller.conf.typesetting
+        else:
+            return self.__conf
+
+    @conf.setter
+    def _set_conf(self, conf: TypeSettingConfig):
+        self.__conf = conf
 
     # 缩进符号的宽度
     @property
     def indent_size(self) -> int:
         return string_width(self.conf.indentation)
 
-    def __init__(self) -> None:
-        self.conf = TypeSettingConfig()
+    def __init__(self, caller: "TextDrawer" = None) -> None:
+        if caller:
+            self.__caller = caller
+        else:
+            self.__caller = None
+            self.__conf = TypeSettingConfig()
         pass
 
     def wrap_text(self, txt: str) -> list[str]:
