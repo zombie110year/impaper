@@ -90,3 +90,24 @@ def test_ignorabletypesetting_iter_tokens():
         (77, "<A/>"),
         (81, "!"),
     ]
+
+
+def test_ignorabletypesetting_wrap_text():
+    ts = IgnorableTypeSetting(labels={"<A>", "<A/>", "<B>", "<B/>"})
+    text = (
+        "There is a <A>pen<A/>, There is an <B>apple<B/>,"
+        " There is an ... <A>apple-pen<A/>!"
+    )
+    wrapped = ts.wrap_text(text)
+    line = wrapped[0]
+    cleaned = ts.label_re.sub(line, "")
+    assert len(cleaned) <= ts.conf.line_width
+    ts2 = IgnorableTypeSetting(labels={"<Yellow>", "<Yellow/>", "<Black>", "<Black/>"})
+    text2 = (
+        "There is a <Yellow>pen<Yellow/>, There is an <Black>apple<Black/>,"
+        " There is an ... <Yellow>apple-pen<Yellow/>!"
+    )
+    wrapped2 = ts2.wrap_text(text2)
+    line2 = wrapped2[0]
+    cleaned2 = ts2.label_re.sub(line2, "")
+    assert cleaned == cleaned2

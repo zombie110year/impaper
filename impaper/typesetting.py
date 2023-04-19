@@ -149,7 +149,6 @@ class IgnorableTypeSetting(TypeSetting):
         """根据折行规则给文本换行、折行，不保留换行符。
         会检查传入内容是否在 self.labels 中，如果在，则将其宽度当作0。
         """
-        raise NotImplementedError
         # 字符序号 => 换行/折行（1, 2)
         newline = 1
         wrapline = 2
@@ -158,12 +157,12 @@ class IgnorableTypeSetting(TypeSetting):
         # 当前行宽度
         width = 0
         # 给文本打上换行、折行标记
-        for i, c in enumerate(txt):
-            if c == "\n":
+        for i, token in self.iter_tokens(txt):
+            if token == "\n":
                 signs[i] = newline
                 width = 0
                 continue
-            cw = char_width(c)
+            cw = char_width(token) if token not in self.labels else 0
             if width + cw > self.conf.line_width:
                 signs[i] = wrapline
                 # 折行时有缩进
