@@ -204,7 +204,11 @@ class ColorTextDrawer(TextDrawer):
     + `self.conf.layout.margin` : 上右下左顺序的四元组，单位 px，默认全 6px
     + `self.conf.layout.padding` : 上右下左顺序的四元组，单位 px，默认全 2px
     + `self.conf.layout.spacing` : 行距，单位 px，默认 2px
-    + `self.conf.color_text_drawer.colors` : 为一个字典，存储了 标签名 => HEX 格式的颜色
+    + `self.conf.colors` : 为一个字典，存储了 标签名 => HEX 格式的颜色
+
+    在文本中可以使用类似 HTML 的标签 <Color>text<Reset/> 来标记一段文本的颜色。
+    和 HTML 不同的是，只支持一种闭合标签 -- <Reset/>，作用是将颜色重设为默认
+    (即self.fg_color)。
 
     ```py
     from impaper import ColorTextDrawer
@@ -214,15 +218,16 @@ class ColorTextDrawer(TextDrawer):
     ctd.fg_color = ctd.conf.colors["Peach"]
     im = ctd.draw(
         "abcdefg,abcdefg,abcdefg\n"
-        "你好世界，你好世界，<Yellow>你好世界。<Yellow/>\n"
-        "你好世界，你好世界，你好世界，你好世界，<Red>你好世界<Red/>，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，"
+        "你好世界，你好世界，<Yellow>你好世界。<Reset/>\n"
+        "你好世界，你好世界，你好世界，你好世界，<Red>你好世界<Reset/>，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，"
     )
     ```
     """
 
     def __init__(self) -> None:
         self.__conf = ColorTextDrawerConfig()
-        self._labels = set(i for i in self.__conf.colors.keys())
+        self._labels = set(f"<{i}>" for i in self.__conf.colors.keys())
+        self._labels.add("<Reset/>")
         self._labels_re = re.compile("|".join(self._labels))
         self.ts = IgnorableTypeSetting(caller=self, labels=self._labels)
         self.fg_color = self.conf.colors["Text"]
@@ -235,8 +240,11 @@ class ColorTextDrawer(TextDrawer):
     @conf.setter
     def set_conf(self, conf: ColorTextDrawerConfig):
         self.__conf = conf
+        self._labels = set(f"<{i}>" for i in self.__conf.colors.keys())
+        self._labels.add("<Reset/>")
+        self._labels_re = re.compile("|".join(self._labels))
         self.ts = IgnorableTypeSetting(
-            caller=self, labels=set(i for i in conf.colors.keys())
+            caller=self, labels=self._labels
         )
 
     def draw(self, text: str) -> Image.Image:
@@ -253,16 +261,25 @@ class ColorTextDrawer(TextDrawer):
 
         # 寻找作画区域
         left, up = self.text_position()
-        _, fh = self.fontbox_size()
+        fw, fh = self.fontbox_size()
         # 绘制文字
+        color = self.fg_color
         for i, line in enumerate(lines):
             x = left
             y = up + fh * i + i * self.conf.layout.spacing
-            drawboard.text(
-                xy=(x, y),
-                text=line,
-                fill=self.fg_color,
-                font=self.font,
-            )
-
+            for ii, token in self.ts.iter_tokens(line):
+                if token in self._labels:
+                    if token == "<Reset/>":
+                        color = self.fg_color
+                    else:
+                        color_name = token[1:-1]
+                        color = self.conf.colors[color_name]
+                else:
+                    drawboard.text(
+                        xy=(x, y),
+                        text=token,
+                        fill=color,
+                        font=self.font,
+                    )
+                    x += string_width(token) * fw
         return canvas
