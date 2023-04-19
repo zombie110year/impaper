@@ -4,7 +4,7 @@ Config Module, define config object of {ref}`Text2Png`.
 
 from pydantic import BaseModel, Extra
 
-__all__ = ("Font", "Layout", "Config")
+__all__ = ("Font", "Layout", "Config", "ColorTextDrawerConfig")
 
 
 class Font(BaseModel, extra=Extra.ignore):
@@ -63,7 +63,7 @@ class ColorTextDrawerConfig(Config, extra=Extra.ignore):
     各颜色都是 HEX 代码。默认颜色参考了 Catppuccin Mocha
     (https://github.com/catppuccin/catppuccin) 主题。
     """
-    colors: dict[str, int] = {
+    colors: dict[str, tuple[int, int, int]] = {
         "Rosewater": (245, 224, 220),
         "Flamingo": (242, 205, 205),
         "Pink": (245, 194, 231),

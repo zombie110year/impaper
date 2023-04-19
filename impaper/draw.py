@@ -238,8 +238,11 @@ class ColorTextDrawer(TextDrawer):
         return self.__conf
 
     @conf.setter
-    def set_conf(self, conf: ColorTextDrawerConfig):
-        self.__conf = conf
+    def conf(self, conf: ColorTextDrawerConfig):
+        merged = self.__conf.dict()
+        newone = conf.dict()
+        merged.update(newone)
+        self.__conf = ColorTextDrawerConfig(**merged)
         self._labels = set(f"<{i}>" for i in self.__conf.colors.keys())
         self._labels.add("<Reset/>")
         self._labels_re = re.compile("|".join(self._labels))
