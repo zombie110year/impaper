@@ -100,7 +100,7 @@ def test_ignorabletypesetting_wrap_text():
     )
     wrapped = ts.wrap_text(text)
     line = wrapped[0]
-    cleaned = ts.label_re.sub(line, "")
+    cleaned = ts.label_re.sub("", line)
     assert len(cleaned) <= ts.conf.line_width
     ts2 = IgnorableTypeSetting(labels={"<Yellow>", "<Yellow/>", "<Black>", "<Black/>"})
     text2 = (
@@ -109,5 +109,5 @@ def test_ignorabletypesetting_wrap_text():
     )
     wrapped2 = ts2.wrap_text(text2)
     line2 = wrapped2[0]
-    cleaned2 = ts2.label_re.sub(line2, "")
+    cleaned2 = ts2.label_re.sub("", line2)
     assert cleaned == cleaned2
