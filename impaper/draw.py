@@ -1,16 +1,16 @@
 import importlib.resources as pkg_resources
+import re
 from abc import ABCMeta, abstractmethod
 from io import SEEK_SET, BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .canvas import GreyCanvas
+from .canvas import GreyCanvas, RGBCanvas
 from .charwidth import string_width
-from .config import Config
-from .typesetting import TypeSetting
+from .config import ColorTextDrawerConfig, Config
+from .typesetting import IgnorableTypeSetting, TypeSetting
 
-
-__all__ = ("SimpleTextDrawer",)
+__all__ = ("SimpleTextDrawer", "ColorTextDrawer")
 
 
 class TextDrawer(metaclass=ABCMeta):
@@ -167,6 +167,85 @@ class SimpleTextDrawer(TextDrawer):
         text_size = self._text_size_list(lines)
         canvas_size = self.canvas_size(text_size)
         canvas_builder = GreyCanvas()
+        canvas_builder.size(canvas_size)
+        canvas_builder.background(self.bg_color)
+        canvas = canvas_builder.build()
+        drawboard = ImageDraw.Draw(canvas)
+
+        # 寻找作画区域
+        left, up = self.text_position()
+        _, fh = self.fontbox_size()
+        # 绘制文字
+        for i, line in enumerate(lines):
+            x = left
+            y = up + fh * i + i * self.conf.layout.spacing
+            drawboard.text(
+                xy=(x, y),
+                text=line,
+                fill=self.fg_color,
+                font=self.font,
+            )
+
+        return canvas
+
+
+class ColorTextDrawer(TextDrawer):
+    """简单的文本绘制工具，自动生成一个刚好包括住被折行文本的图像，渲染文本。
+    可通过 <style><style/>标签来标注某段文本，以生成对应颜色的文字图像。
+
+    可以自定义的配置属性有：
+
+    + `self.fontsize` : 字号，默认14
+    + `self.fg_color` : 字体颜色，默认白色 0xff
+    + `self.bg_color` : 背景颜色，默认黑色 0x00
+    + `self.ts.line_width` : 折行宽度，单位是字，默认 48
+    + `self.ts.indentation` : 折行缩进符号，字符串，默认两个空格
+    + `self.conf.font.path` : 重新指定一个字体，需要输入 TTF 格式的字体路径
+    + `self.conf.layout.margin` : 上右下左顺序的四元组，单位 px，默认全 6px
+    + `self.conf.layout.padding` : 上右下左顺序的四元组，单位 px，默认全 2px
+    + `self.conf.layout.spacing` : 行距，单位 px，默认 2px
+    + `self.conf.color_text_drawer.colors` : 为一个字典，存储了 标签名 => HEX 格式的颜色
+
+    ```py
+    from impaper import ColorTextDrawer
+
+
+    ctd = ColorTextDrawer()
+    ctd.fg_color = ctd.conf.colors["Peach"]
+    im = ctd.draw(
+        "abcdefg,abcdefg,abcdefg\n"
+        "你好世界，你好世界，<Yellow>你好世界。<Yellow/>\n"
+        "你好世界，你好世界，你好世界，你好世界，<Red>你好世界<Red/>，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，你好世界，"
+    )
+    ```
+    """
+
+    def __init__(self) -> None:
+        self.__conf = ColorTextDrawerConfig()
+        self._labels = set(i for i in self.__conf.colors.keys())
+        self._labels_re = re.compile("|".join(self._labels))
+        self.ts = IgnorableTypeSetting(caller=self, labels=self._labels)
+        self.fg_color = self.conf.colors["Text"]
+        self.bg_color = self.conf.colors["Crust"]
+
+    @property
+    def conf(self):
+        return self.__conf
+
+    @conf.setter
+    def set_conf(self, conf: ColorTextDrawerConfig):
+        self.__conf = conf
+        self.ts = IgnorableTypeSetting(
+            caller=self, labels=set(i for i in conf.colors.keys())
+        )
+
+    def draw(self, text: str) -> Image.Image:
+        # 准备画布
+        lines = self.ts.wrap_text(text)
+        # 忽略标签计算尺寸
+        text_size = self._text_size_list([self._labels_re.sub("", i) for i in lines])
+        canvas_size = self.canvas_size(text_size)
+        canvas_builder = RGBCanvas()
         canvas_builder.size(canvas_size)
         canvas_builder.background(self.bg_color)
         canvas = canvas_builder.build()

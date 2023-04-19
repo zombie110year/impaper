@@ -42,3 +42,23 @@ class GreyCanvas(CanvasBuilder):
     def build(self) -> Image:
         canvas = Image.new("L", size=self._size, color=self._color)
         return canvas
+
+
+class RGBCanvas(CanvasBuilder):
+    "支持 RGB 颜色的画板（不含透明通道）"
+    def __init__(self) -> None:
+        super().__init__()
+        # 默认黑色背景
+        self._color = (0, 0, 0)
+        self._size = (512, 1024)
+
+    def size(self, size: tuple[int, int]):
+        return super().size(size)
+
+    def background(self, bg: int):
+        "设置画布背景颜色"
+        self._color = bg
+
+    def build(self) -> Image:
+        canvas = Image.new("RGB", size=self._size, color=self._color)
+        return canvas
